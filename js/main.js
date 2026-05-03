@@ -313,9 +313,11 @@ const BANNER = `
 ██║  ██║██║  ██║██║  ██║╚██████╔╝███████╗
 ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 </pre>
-<span class="${C.accent} text-base font-semibold">rashidul@rahul</span> <span class="${C.dim}">v2.0.0 | Backend Engineer | Microservices & System Design</span>
+<span class="${C.accent} text-base font-semibold">rashidul@rahul</span>
 
-<span class="${C.dim}">Type </span><span class="${C.accent}">help</span><span class="${C.dim}"> to see available commands.</span>
+<span class="${C.white}">Scalable backends. Reliable systems. AI-powered workflows.</span>
+
+<span class="${C.dim} mt-2">Type </span><span class="${C.accent}">help</span><span class="${C.dim}"> to see available commands.</span>
 
 `;
 
