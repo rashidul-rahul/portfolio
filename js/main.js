@@ -334,6 +334,7 @@ function runCmd(cmd) {
 
   if (cmd === 'clear') {
     output.innerHTML = '';
+    out(BANNER);
     return;
   }
 
