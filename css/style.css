@@ -1,0 +1,355 @@
+8|  :root {
+     9|    --bg: #0a0a0a;
+    10|    --surface: #0d0d0d;
+    11|    --text: #a8ff60;
+    12|    --dim: #4a7a33;
+    13|    --accent: #00ff41;
+    14|    --warn: #ffb000;
+    15|    --error: #ff4040;
+    16|    --cyan: #00d4ff;
+    17|    --purple: #b380ff;
+    18|    --prompt: #00ff41;
+    19|    --font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', 'Consolas', monospace;
+    20|  }
+    21|
+    22|  * { margin: 0; padding: 0; box-sizing: border-box; }
+    23|
+    24|  body {
+    25|    background: var(--bg);
+    26|    color: var(--text);
+    27|    font-family: var(--font);
+    28|    font-size: 14px;
+    29|    line-height: 1.65;
+    30|    min-height: 100vh;
+    31|    overflow-x: hidden;
+    32|  }
+    33|
+    34|  /* Scanlines overlay */
+    35|  body::after {
+    36|    content: '';
+    37|    position: fixed;
+    38|    top: 0; left: 0; right: 0; bottom: 0;
+    39|    background: repeating-linear-gradient(
+    40|      0deg,
+    41|      rgba(0,0,0,0.15) 0px,
+    42|      rgba(0,0,0,0.15) 1px,
+    43|      transparent 1px,
+    44|      transparent 3px
+    45|    );
+    46|    pointer-events: none;
+    47|    z-index: 999;
+    48|  }
+    49|
+    50|  .terminal {
+    51|    max-width: 900px;
+    52|    margin: 0 auto;
+    53|    padding: 24px 20px 60px;
+    54|    min-height: 100vh;
+    55|    position: relative;
+    56|  }
+    57|
+    58|  /* Terminal header bar */
+    59|  .term-header {
+    60|    position: sticky;
+    61|    top: 0;
+    62|    background: var(--bg);
+    63|    padding: 12px 0 16px;
+    64|    border-bottom: 1px solid rgba(168,255,96,0.12);
+    65|    margin-bottom: 20px;
+    66|    z-index: 10;
+    67|    display: flex;
+    68|    align-items: center;
+    69|    gap: 10px;
+    70|    flex-wrap: wrap;
+    71|  }
+    72|
+    73|  .term-dots {
+    74|    display: flex;
+    75|    gap: 6px;
+    76|    flex-shrink: 0;
+    77|  }
+    78|  .term-dots span {
+    79|    width: 12px; height: 12px;
+    80|    border-radius: 50%;
+    81|    display: inline-block;
+    82|    opacity: 0.8;
+    83|  }
+    84|  .term-dots .red   { background: #ff5f56; }
+    85|  .term-dots .yellow{ background: #ffbd2e; }
+    86|  .term-dots .green { background: #27c93f; }
+    87|
+    88|  .term-title {
+    89|    color: var(--dim);
+    90|    font-size: 12px;
+    91|    margin-left: 4px;
+    92|    flex: 1;
+    93|    white-space: nowrap;
+    94|    overflow: hidden;
+    95|    text-overflow: ellipsis;
+    96|  }
+    97|
+    98|  /* Quick nav commands */
+    99|  .quick-cmds {
+   100|    display: flex;
+   101|    gap: 6px;
+   102|    flex-wrap: wrap;
+   103|  }
+   104|  .quick-cmds button {
+   105|    background: rgba(168,255,96,0.06);
+   106|    border: 1px solid rgba(168,255,96,0.15);
+   107|    color: var(--dim);
+   108|    font-family: var(--font);
+   109|    font-size: 12px;
+   110|    padding: 5px 10px;
+   111|    border-radius: 4px;
+   112|    cursor: pointer;
+   113|    transition: all 0.15s;
+   114|    white-space: nowrap;
+   115|  }
+   116|  .quick-cmds button:hover {
+   117|    background: rgba(168,255,96,0.14);
+   118|    color: var(--accent);
+   119|    border-color: rgba(168,255,96,0.3);
+   120|  }
+   121|
+   122|  /* Output area */
+   123|  .output {
+   124|    white-space: pre-wrap;
+   125|    word-break: break-word;
+   126|  }
+   127|
+   128|  .output .line {
+   129|    margin-bottom: 2px;
+   130|  }
+   131|
+   132|  /* Banner scaling */
+   133|  .banner-ascii {
+   134|    display: block;
+   135|    font-size: 11px;
+   136|    line-height: 1.2;
+   137|    overflow-x: auto;
+   138|    white-space: pre;
+   139|  }
+   140|
+   141|  /* Prompt line */
+   142|  .input-line {
+   143|    display: flex;
+   144|    align-items: center;
+   145|    margin-top: 8px;
+   146|    position: relative;
+   147|    gap: 0;
+   148|  }
+   149|
+   150|  .prompt {
+   151|    color: var(--accent);
+   152|    white-space: nowrap;
+   153|    margin-right: 6px;
+   154|    user-select: none;
+   155|    flex-shrink: 0;
+   156|  }
+   157|
+   158|  .prompt .user    { color: var(--cyan); }
+   159|  .prompt .host    { color: var(--purple); }
+   160|  .prompt .sep     { color: var(--dim); }
+   161|  .prompt .path    { color: var(--warn); }
+   162|  .prompt .sym     { color: var(--accent); }
+   163|
+   164|  #cmd-input {
+   165|    background: transparent;
+   166|    border: none;
+   167|    color: var(--text);
+   168|    font-family: var(--font);
+   169|    font-size: 14px;
+   170|    flex: 1;
+   171|    min-width: 0;
+   172|    outline: none;
+   173|    caret-color: var(--accent);
+   174|  }
+   175|
+   176|  /* Blinking cursor */
+   177|  .cursor-blink {
+   178|    display: inline-block;
+   179|    width: 8px;
+   180|    height: 16px;
+   181|    background: var(--accent);
+   182|    animation: blink 1s step-end infinite;
+   183|    vertical-align: middle;
+   184|    margin-left: 2px;
+   185|  }
+   186|
+   187|  @keyframes blink {
+   188|    0%, 100% { opacity: 1; }
+   189|    50% { opacity: 0; }
+   190|  }
+   191|
+   192|  /* Output styling */
+   193|  .section-header {
+   194|    color: var(--warn);
+   195|    margin-top: 16px;
+   196|    margin-bottom: 6px;
+   197|    font-weight: bold;
+   198|  }
+   199|
+   200|  .section-sub {
+   201|    color: var(--cyan);
+   202|    margin-top: 10px;
+   203|    margin-bottom: 4px;
+   204|  }
+   205|
+   206|  .dim     { color: var(--dim); }
+   207|  .accent  { color: var(--accent); }
+   208|  .warn    { color: var(--warn); }
+   209|  .cyan    { color: var(--cyan); }
+   210|  .purple  { color: var(--purple); }
+   211|  .error   { color: var(--error); }
+   212|
+   213|  /* Tag pills for skills */
+   214|  .tag-row {
+   215|    display: flex;
+   216|    flex-wrap: wrap;
+   217|    gap: 6px;
+   218|    margin: 4px 0 10px;
+   219|  }
+   220|
+   221|  .tag {
+   222|    background: rgba(168,255,96,0.08);
+   223|    border: 1px solid rgba(168,255,96,0.18);
+   224|    color: var(--text);
+   225|    font-family: var(--font);
+   226|    font-size: 12px;
+   227|    padding: 3px 8px;
+   228|    border-radius: 3px;
+   229|    white-space: nowrap;
+   230|  }
+   231|
+   232|  /* Links */
+   233|  a {
+   234|    color: var(--cyan);
+   235|    text-decoration: none;
+   236|    border-bottom: 1px dashed rgba(0,212,255,0.3);
+   237|    word-break: break-all;
+   238|  }
+   239|  a:hover {
+   240|    color: var(--accent);
+   241|    border-bottom-color: var(--accent);
+   242|  }
+   243|
+   244|  /* Help table */
+   245|  .cmd-grid {
+   246|    display: grid;
+   247|    grid-template-columns: auto 1fr;
+   248|    gap: 4px 20px;
+   249|    margin: 8px 0;
+   250|  }
+   251|  .cmd-grid .cmd { color: var(--accent); }
+   252|  .cmd-grid .desc{ color: var(--dim); }
+   253|
+   254|  /* Subtitle responsiveness */
+   255|  .short-sub { display: none; }
+   256|
+   257|  /* ==================== TABLET (≤900px) ==================== */
+   258|  @media (max-width: 900px) {
+   259|    .terminal { padding: 20px 16px 60px; }
+   260|    .term-header { gap: 8px; }
+   261|    .quick-cmds button {
+   262|      font-size: 11px;
+   263|      padding: 4px 8px;
+   264|    }
+   265|  }
+   266|
+   267|  /* ==================== MOBILE (≤600px) ==================== */
+   268|  @media (max-width: 600px) {
+   269|    body { font-size: 13px; }
+   270|
+   271|    .terminal { padding: 12px 10px 80px; }
+   272|
+   273|    .full-sub { display: none; }
+   274|    .short-sub { display: inline; }
+   275|
+   276|    .term-header {
+   277|      gap: 6px;
+   278|      padding: 8px 0 10px;
+   279|      margin-bottom: 12px;
+   280|    }
+   281|
+   282|    .term-dots span {
+   283|      width: 10px; height: 10px;
+   284|    }
+   285|
+   286|    .term-title {
+   287|      font-size: 11px;
+   288|    }
+   289|
+   290|    /* Quick nav: full-width below title */
+   291|    .quick-cmds {
+   292|      width: 100%;
+   293|      gap: 4px;
+   294|      padding-top: 4px;
+   295|    }
+   296|    .quick-cmds button {
+   297|      font-size: 10px;
+   298|      padding: 4px 7px;
+   299|      border-radius: 3px;
+   300|    }
+   301|
+   302|    /* Banner: smaller, scrollable */
+   303|    .banner-ascii {
+   304|      font-size: 7px;
+   305|      line-height: 1.1;
+   306|    }
+   307|
+   308|    /* Shorter prompt on mobile */
+   309|    .prompt {
+   310|      font-size: 12px;
+   311|      margin-right: 4px;
+   312|    }
+   313|
+   314|    #cmd-input {
+   315|      font-size: 13px;
+   316|    }
+   317|
+   318|    .section-header {
+   319|      font-size: 13px;
+   320|      margin-top: 12px;
+   321|    }
+   322|
+   323|    .tag {
+   324|      font-size: 10px;
+   325|      padding: 2px 6px;
+   326|    }
+   327|    .tag-row {
+   328|      gap: 4px;
+   329|      margin: 3px 0 8px;
+   330|    }
+   331|
+   332|    /* Help grid: stack on narrow screens */
+   333|    .cmd-grid {
+   334|      grid-template-columns: 1fr;
+   335|      gap: 1px 0;
+   336|    }
+   337|  }
+   338|
+   339|  /* ==================== TINY PHONES (≤380px) ==================== */
+   340|  @media (max-width: 380px) {
+   341|    .terminal { padding: 8px 6px 80px; }
+   342|    body { font-size: 12px; }
+   343|
+   344|    .quick-cmds button {
+   345|      font-size: 9px;
+   346|      padding: 3px 5px;
+   347|    }
+   348|
+   349|    .banner-ascii {
+   350|      display: none; /* Hide ASCII art on tiny screens */
+   351|    }
+   352|
+   353|    .prompt {
+   354|      font-size: 11px;
+   355|      margin-right: 2px;
+   356|    }
+   357|
+   358|    #cmd-input {
+   359|      font-size: 12px;
+   360|    }
+   361|  }
+   362|
