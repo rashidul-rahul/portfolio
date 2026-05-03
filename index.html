@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rashidul Rahul — Backend Engineer</title>
+  <title>rashidul@rahul:~$</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -12,655 +12,122 @@
           fontFamily: {
             mono: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', 'Consolas', 'monospace'],
           },
-          colors: {
-            terminal: '#a8ff60',
-            accent: '#10b981',
-            surface: '#0d0d0d',
-          }
         }
       }
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
-    body { font-family: 'Inter', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Subtle grid pattern background */
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', 'Consolas', monospace;
+    }
+
+    /* Background grid */
     .bg-grid {
       background-image:
-        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-      background-size: 60px 60px;
+        linear-gradient(rgba(16,185,129,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16,185,129,.03) 1px, transparent 1px);
+      background-size: 50px 50px;
     }
 
-    /* Glow effects */
-    .glow-green {
-      box-shadow: 0 0 40px rgba(16,185,129,.08), 0 0 80px rgba(16,185,129,.04);
-    }
-    .glow-text {
-      text-shadow: 0 0 20px rgba(16,185,129,.3);
+    /* Scanlines overlay */
+    .scanlines::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0px, rgba(0,0,0,.12) 1px, transparent 1px, transparent 3px);
+      pointer-events: none;
+      z-index: 50;
     }
 
-    /* Terminal cursor blink */
+    /* Cursor blink */
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
     .cursor-blink { animation: blink 1s step-end infinite; }
 
-    /* Card hover lift */
-    .card-hover { transition: all .25s ease; }
-    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(16,185,129,.08); }
+    /* Fade in for new lines */
+    @keyframes termFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+    .term-line { animation: termFadeIn .08s ease-out forwards; }
 
-    /* Gradient text */
-    .text-gradient {
-      background: linear-gradient(135deg, #a8ff60, #10b981);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* Terminal scrollbar */
+    #term-output::-webkit-scrollbar { width: 5px; }
+    #term-output::-webkit-scrollbar-track { background: transparent; }
+    #term-output::-webkit-scrollbar-thumb { background: rgba(16,185,139,.15); border-radius: 3px; }
+    #term-output::-webkit-scrollbar-thumb:hover { background: rgba(16,185,139,.25); }
+
+    /* Input caret */
+    #cmd-input { caret-color: #10b981; }
+
+    /* Glow on terminal window */
+    .term-glow {
+      box-shadow: 0 0 60px rgba(16,185,129,.04), 0 0 120px rgba(16,185,129,.02), 0 0 0 1px rgba(16,185,129,.08);
     }
 
-    /* Section reveal animation */
-    .reveal { opacity: 0; transform: translateY(20px); transition: all .6s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* Terminal mini */
-    #mini-term .term-line { opacity: 0; animation: fadeIn .1s forwards; }
-    @keyframes fadeIn { to { opacity: 1; } }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #09090b; }
-    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    /* Responsive ASCII scaling */
+    @media (max-width: 768px) { .ascii-art { font-size: 6px; line-height: 1.1; } }
+    @media (max-width: 480px) { .ascii-art { font-size: 4.5px; line-height: 1.05; } }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-200 font-sans antialiased">
-
-  <!-- ============ BG TEXTURE ============ -->
+<body class="bg-neutral-950 text-emerald-400 min-h-screen overflow-x-hidden scanlines">
   <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
 
-  <!-- ============ NAV ============ -->
-  <nav class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800/50 backdrop-blur-xl bg-zinc-950/70">
-    <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-      <a href="#hero" class="font-mono text-emerald-400 font-semibold tracking-tight text-sm">
-        rashidul<span class="text-zinc-500">@</span>rahul<span class="text-zinc-600">:~$</span>
-      </a>
-      <div class="hidden md:flex items-center gap-1">
-        <a href="#about" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 rounded-md hover:bg-zinc-800/50 transition-colors font-mono">about</a>
-        <a href="#skills" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 rounded-md hover:bg-zinc-800/50 transition-colors font-mono">skills</a>
-        <a href="#experience" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 rounded-md hover:bg-zinc-800/50 transition-colors font-mono">experience</a>
-        <a href="#projects" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 rounded-md hover:bg-zinc-800/50 transition-colors font-mono">projects</a>
-        <a href="#contact" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 rounded-md hover:bg-zinc-800/50 transition-colors font-mono">contact</a>
+  <!-- ===== TERMINAL WINDOW ===== -->
+  <div class="relative z-10 min-h-screen flex items-start justify-center p-3 sm:p-5 md:p-8">
+    <div id="terminal"
+         class="w-full max-w-4xl bg-neutral-900/90 backdrop-blur-sm rounded-xl md:rounded-2xl term-glow flex flex-col overflow-hidden border border-neutral-800/60"
+         style="min-height: calc(100vh - 1.5rem);">
+
+      <!-- Header bar -->
+      <div class="flex items-center gap-2 sm:gap-3 px-4 py-3 bg-neutral-900 border-b border-neutral-800/50 shrink-0 select-none">
+        <div class="flex gap-1.5 shrink-0">
+          <span class="w-3 h-3 rounded-full bg-red-500/70"></span>
+          <span class="w-3 h-3 rounded-full bg-amber-400/70"></span>
+          <span class="w-3 h-3 rounded-full bg-emerald-500/70"></span>
+        </div>
+        <span class="text-xs text-neutral-600 ml-2 truncate flex-1 font-mono">rashidul@rahul: ~/portfolio</span>
+        <!-- Quick command buttons -->
+        <div class="hidden sm:flex items-center gap-1">
+          <button onclick="window.runCmd('about')"      class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">about</button>
+          <button onclick="window.runCmd('skills')"     class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">skills</button>
+          <button onclick="window.runCmd('experience')" class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">experience</button>
+          <button onclick="window.runCmd('projects')"   class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">projects</button>
+          <button onclick="window.runCmd('contact')"    class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">contact</button>
+          <button onclick="window.runCmd('help')"       class="px-2.5 py-1 text-[10px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 hover:border-emerald-500/20 transition-all font-mono">help</button>
+        </div>
+        <!-- Mobile command pills -->
+        <div class="flex sm:hidden items-center gap-0.5 overflow-x-auto">
+          <button onclick="window.runCmd('about')" class="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 transition-all font-mono whitespace-nowrap">about</button>
+          <button onclick="window.runCmd('skills')" class="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 transition-all font-mono whitespace-nowrap">skills</button>
+          <button onclick="window.runCmd('exp')" class="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 transition-all font-mono whitespace-nowrap">exp</button>
+          <button onclick="window.runCmd('projects')" class="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 transition-all font-mono whitespace-nowrap">prj</button>
+          <button onclick="window.runCmd('help')" class="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/40 border border-neutral-700/30 rounded hover:bg-neutral-800 hover:text-emerald-400 transition-all font-mono whitespace-nowrap">help</button>
+        </div>
       </div>
-      <a href="#contact" class="hidden md:inline-flex items-center gap-2 px-4 py-1.5 text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full hover:bg-emerald-500/20 transition-colors">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        Available for work
-      </a>
-    </div>
-  </nav>
 
-  <!-- ============ HERO ============ -->
-  <section id="hero" class="relative z-10 pt-32 pb-20 md:pt-44 md:pb-32 px-6">
-    <div class="max-w-4xl mx-auto text-center">
-      <!-- Status badge -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 bg-zinc-900/80 border border-zinc-800 rounded-full text-xs font-mono text-zinc-400">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        Backend Engineer · Microservices & System Design
+      <!-- Output area -->
+      <div id="term-output" class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 text-sm leading-relaxed font-mono" style="word-break: break-word;">
+        <!-- Content injected by JS -->
       </div>
 
-      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4">
-        <span class="text-white">Rashidul</span>
-        <span class="text-gradient"> Rahul</span>
-      </h1>
-
-      <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-        Building scalable backend systems &amp; distributed architectures.
-        <span class="text-emerald-400/80">6+ years</span> of crafting reliable, high-performance software.
-      </p>
-
-      <p class="text-sm md:text-base text-zinc-500 max-w-xl mx-auto mb-10 font-mono">
-        Python · Django · FastAPI · PostgreSQL · Docker · K8s · AWS · RabbitMQ · AI-Assisted Engineering
-      </p>
-
-      <div class="flex items-center justify-center gap-4 flex-wrap">
-        <a href="#about" class="px-6 py-3 bg-emerald-500 text-zinc-950 font-semibold rounded-lg hover:bg-emerald-400 transition-colors text-sm shadow-lg shadow-emerald-500/20">
-          Explore ↓
-        </a>
-        <a href="#contact" class="px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:border-zinc-500 hover:text-white transition-colors text-sm">
-          Get in touch
-        </a>
-        <a href="https://github.com/rashidul-rahul" target="_blank" class="px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg hover:border-zinc-500 hover:text-white transition-colors text-sm inline-flex items-center gap-2">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          GitHub
-        </a>
+      <!-- Input line -->
+      <div class="flex items-center gap-2 px-4 sm:px-6 py-3 border-t border-neutral-800/50 bg-neutral-900/50 shrink-0 font-mono text-sm">
+        <span class="text-cyan-400 whitespace-nowrap select-none">rashidul</span>
+        <span class="text-neutral-600 select-none">@</span>
+        <span class="text-purple-400 whitespace-nowrap select-none">rahul</span>
+        <span class="text-neutral-600 select-none">:</span>
+        <span class="text-amber-400 whitespace-nowrap select-none">~</span>
+        <span class="text-emerald-400 select-none">$</span>
+        <input type="text" id="cmd-input"
+               class="flex-1 bg-transparent border-none outline-none text-emerald-300 font-mono text-sm ml-1"
+               placeholder="type 'help' to get started..."
+               autofocus autocomplete="off" spellcheck="false">
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ============ ABOUT ============ -->
-  <section id="about" class="relative z-10 py-20 md:py-28 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">01.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">About</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="grid md:grid-cols-5 gap-10 reveal">
-        <div class="md:col-span-3 space-y-5">
-          <p class="text-zinc-300 leading-relaxed">
-            I'm a <span class="text-emerald-400 font-medium">backend engineer</span> with over 6 years of experience designing and building scalable, distributed systems. I thrive at the intersection of <span class="text-emerald-400">system design</span> and <span class="text-emerald-400">AI-assisted engineering</span> — leveraging agentic workflows to accelerate development while maintaining robust architecture.
-          </p>
-          <p class="text-zinc-400 leading-relaxed">
-            Currently at <span class="text-white font-medium">SDS Manager</span>, leading backend architecture for QMS and Autoring, and mentoring a team of engineers. I also teach Python &amp; Django at Ostad, helping the next generation of developers build real-world backend systems.
-          </p>
-          <p class="text-zinc-500 text-sm">
-            Passionate about microservices, event-driven architectures, MCP server development, and pushing the boundaries of what AI-assisted development can achieve.
-          </p>
-        </div>
-        <div class="md:col-span-2 space-y-3">
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
-            <div class="text-3xl font-bold text-emerald-400 font-mono">6+</div>
-            <div class="text-xs text-zinc-500 mt-1">Years Experience</div>
-          </div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
-            <div class="text-3xl font-bold text-emerald-400 font-mono">10+</div>
-            <div class="text-xs text-zinc-500 mt-1">Production Services</div>
-          </div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
-            <div class="text-3xl font-bold text-emerald-400 font-mono">3</div>
-            <div class="text-xs text-zinc-500 mt-1">Companies Shipped At</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ SKILLS ============ -->
-  <section id="skills" class="relative z-10 py-20 md:py-28 px-6 bg-zinc-900/30">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">02.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">Skills &amp; Stack</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-5 reveal">
-
-        <!-- Languages -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Languages</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Python</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">SQL</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Bash</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Shell Scripting</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">PHP</span>
-          </div>
-        </div>
-
-        <!-- Frameworks -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Frameworks</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Django</span>
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">FastAPI</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Flask</span>
-          </div>
-        </div>
-
-        <!-- Architecture -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Architecture</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Microservices</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Event-Driven</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">REST APIs</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">System Design</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">DB Design</span>
-          </div>
-        </div>
-
-        <!-- Databases -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Databases</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">PostgreSQL</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">MySQL</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">MongoDB</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Cassandra</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Redis</span>
-          </div>
-        </div>
-
-        <!-- Messaging & Async -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Messaging &amp; Async</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">RabbitMQ</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Celery</span>
-          </div>
-        </div>
-
-        <!-- DevOps & Cloud -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover md:col-span-2">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">DevOps &amp; Cloud</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Docker</span>
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Kubernetes</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Terraform</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Ansible</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Jenkins</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">GitLab CI/CD</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">AWS</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">GCP</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">DigitalOcean</span>
-          </div>
-        </div>
-
-        <!-- AI Engineering -->
-        <div class="bg-zinc-900/60 border border-emerald-500/20 rounded-xl p-5 card-hover md:col-span-2 glow-green">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">✦ AI-Assisted Engineering</h3>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">Agentic Coding</span>
-            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-medium">MCP Server Dev</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Claude Code</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Codex</span>
-            <span class="px-3 py-1 bg-zinc-800/80 text-zinc-300 border border-zinc-700 rounded-md text-xs">Cursor</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ EXPERIENCE ============ -->
-  <section id="experience" class="relative z-10 py-20 md:py-28 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">03.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">Experience</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="space-y-6 reveal">
-        <!-- SDS Manager -->
-        <div class="relative pl-6 border-l-2 border-emerald-500/30 pb-6 card-hover">
-          <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-zinc-950"></div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 ml-2">
-            <div class="flex items-start justify-between flex-wrap gap-2 mb-2">
-              <h3 class="text-lg font-bold text-white">Software Engineer</h3>
-              <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Oct 2025 – Present</span>
-            </div>
-            <p class="text-emerald-400 font-medium text-sm mb-3">SDS Manager</p>
-            <ul class="space-y-1.5 text-sm text-zinc-400">
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Improved delivery speed &amp; reduced issue rates via better tech planning</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Designed 4 backend services and 2 core modules</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Led 6 engineers in technical discussions &amp; backend delivery</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Designed auth &amp; wallet DB architecture for <strong class="text-zinc-200">Autoring</strong></li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Contributed to <strong class="text-zinc-200">QMS</strong>: microservices + RabbitMQ event-driven design</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Built MCP server for QMS — AI-assisted workflows</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Ostad -->
-        <div class="relative pl-6 border-l-2 border-zinc-800 pb-6 card-hover">
-          <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-zinc-700 border-2 border-zinc-950"></div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 ml-2">
-            <div class="flex items-start justify-between flex-wrap gap-2 mb-2">
-              <h3 class="text-lg font-bold text-white">Instructor — Python &amp; Django</h3>
-              <span class="text-xs font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">Feb 2025 – Present</span>
-            </div>
-            <p class="text-zinc-400 font-medium text-sm mb-3">Ostad</p>
-            <ul class="space-y-1.5 text-sm text-zinc-400">
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Live sessions &amp; project-based learning for Python/Django</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Course materials, coding exercises, real-world backend examples</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Mentor on REST APIs, DB design, Django best practices</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Goama -->
-        <div class="relative pl-6 border-l-2 border-zinc-800 pb-6 card-hover">
-          <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-zinc-700 border-2 border-zinc-950"></div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 ml-2">
-            <div class="flex items-start justify-between flex-wrap gap-2 mb-2">
-              <h3 class="text-lg font-bold text-white">Acting Backend Lead</h3>
-              <span class="text-xs font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">2019 – Sep 2025</span>
-            </div>
-            <p class="text-zinc-400 font-medium text-sm mb-3">Goama</p>
-            <ul class="space-y-1.5 text-sm text-zinc-400">
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Led backend dev for scalable server-side systems &amp; APIs</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> CI/CD with Jenkins &amp; GitLab — <span class="text-emerald-400">reduced deployment time by 40%</span></li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Docker + Kubernetes orchestration for scalability &amp; reliability</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Automated infra provisioning with Ansible &amp; Terraform</li>
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Mentored junior engineers &amp; conducted code reviews</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Sundarbanx -->
-        <div class="relative pl-6 border-l-2 border-zinc-800 card-hover">
-          <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-zinc-800 border-2 border-zinc-950"></div>
-          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 ml-2">
-            <div class="flex items-start justify-between flex-wrap gap-2 mb-2">
-              <h3 class="text-lg font-bold text-white">Backend Developer</h3>
-              <span class="text-xs font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">Sep 2017 – Feb 2018</span>
-            </div>
-            <p class="text-zinc-400 font-medium text-sm mb-3">Sundarbanx.com</p>
-            <ul class="space-y-1.5 text-sm text-zinc-400">
-              <li class="flex items-start gap-2"><span class="text-emerald-500 mt-1 shrink-0">▹</span> Backend features for classified platform (Phalcon PHP)</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ PROJECTS ============ -->
-  <section id="projects" class="relative z-10 py-20 md:py-28 px-6 bg-zinc-900/30">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">04.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">Projects</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-5 reveal">
-
-        <!-- QMS -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 card-hover flex flex-col">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <span class="text-emerald-400 text-lg">⚙️</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-white">QMS</h3>
-              <p class="text-xs text-zinc-500">SDS Manager</p>
-            </div>
-          </div>
-          <p class="text-sm text-zinc-400 leading-relaxed flex-1">
-            Complete microservices architecture with event-driven design via RabbitMQ. Defined service communication patterns, backend flows, and DB structure. Built an MCP server for AI-assisted engineering workflows.
-          </p>
-          <div class="flex flex-wrap gap-1.5 mt-4">
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">Microservices</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">RabbitMQ</span>
-            <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-xs font-mono">MCP Server</span>
-          </div>
-        </div>
-
-        <!-- Autoring -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 card-hover flex flex-col">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-              <span class="text-purple-400 text-lg">🔐</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-white">Autoring</h3>
-              <p class="text-xs text-zinc-500">SDS Manager</p>
-            </div>
-          </div>
-          <p class="text-sm text-zinc-400 leading-relaxed flex-1">
-            Auth &amp; wallet system database architecture. Designed backend data models for secure, scalable product growth. System design for user management and wallet operations.
-          </p>
-          <div class="flex flex-wrap gap-1.5 mt-4">
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">Auth System</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">DB Architecture</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">System Design</span>
-          </div>
-        </div>
-
-        <!-- Nurture Game -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 card-hover flex flex-col">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
-              <span class="text-cyan-400 text-lg">🎮</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-white">Nurture Game</h3>
-              <p class="text-xs text-zinc-500">Goama</p>
-            </div>
-          </div>
-          <p class="text-sm text-zinc-400 leading-relaxed flex-1">
-            Microservices backend for a distributed game platform. Event management and auth services built with Django &amp; FastAPI, backed by PostgreSQL and MongoDB.
-          </p>
-          <div class="flex flex-wrap gap-1.5 mt-4">
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">Django</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">FastAPI</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">PostgreSQL</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">MongoDB</span>
-          </div>
-        </div>
-
-        <!-- Monopoly Game -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 card-hover flex flex-col">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-              <span class="text-amber-400 text-lg">🎲</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-white">Monopoly Game</h3>
-              <p class="text-xs text-zinc-500">Goama</p>
-            </div>
-          </div>
-          <p class="text-sm text-zinc-400 leading-relaxed flex-1">
-            Complete backend game logic and APIs for a Monopoly-style game. Built with Django and MySQL for all gameplay features and operations.
-          </p>
-          <div class="flex flex-wrap gap-1.5 mt-4">
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">Django</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">MySQL</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono">Game API</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ EDUCATION ============ -->
-  <section id="education" class="relative z-10 py-20 md:py-28 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">05.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">Education &amp; More</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-5 reveal">
-        <!-- Education -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Education</h3>
-          <p class="text-white font-semibold text-sm">B.Sc. in CSE</p>
-          <p class="text-zinc-400 text-sm">Daffodil International University</p>
-          <p class="text-zinc-500 text-xs mt-1">Dhaka, Bangladesh</p>
-        </div>
-
-        <!-- Certifications -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Certification</h3>
-          <p class="text-white font-semibold text-sm">Web App Dev with PHP</p>
-          <p class="text-zinc-400 text-sm">BITM under SEIP Project</p>
-        </div>
-
-        <!-- Soft Skills -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 card-hover">
-          <h3 class="text-emerald-400 font-mono text-xs mb-3 uppercase tracking-wider">Soft Skills</h3>
-          <div class="flex flex-wrap gap-1.5">
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Tech Leadership</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Mentoring</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Problem Solving</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Analytical Thinking</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Communication</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Team Collaboration</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">System Design</span>
-            <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs">Continuous Learning</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TERMINAL MINI (Easter Egg) ============ -->
-  <section class="relative z-10 py-20 md:py-28 px-6 bg-zinc-900/30">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">$</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white font-mono">Terminal</h2>
-        <div class="flex-1 h-px bg-zinc-800"></div>
-      </div>
-
-      <div class="reveal">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-          <!-- Terminal header -->
-          <div class="flex items-center gap-2 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
-            <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
-            <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
-            <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
-            <span class="ml-3 text-xs text-zinc-500 font-mono">rashidul@rahul:~/portfolio</span>
-          </div>
-          <!-- Terminal body -->
-          <div id="mini-term" class="p-5 font-mono text-sm h-80 overflow-y-auto" style="background: #0a0a0a;">
-            <div class="term-line text-emerald-400">
-  ██████╗  █████╗ ███████╗██╗  ██╗██╗██████╗ ██╗   ██╗██╗
-  ██╔══██╗██╔══██╗██╔════╝██║  ██║██║██╔══██╗██║   ██║██║
-  ██████╔╝███████║███████╗███████║██║██║  ██║██║   ██║██║
-  ██╔══██╗██╔══██║╚════██║██╔══██║██║██║  ██║██║   ██║██║
-  ██║  ██║██║  ██║███████║██║  ██║██║██████╔╝╚██████╔╝███████╗
-  ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═════╝  ╚═════╝ ╚══════╝
-            </div>
-            <div class="term-line text-zinc-500 mt-1">v1.0.0 | Type <span class="text-emerald-400">help</span> for commands</div>
-            <div class="term-line text-zinc-600 mt-3" id="term-output"></div>
-            <div class="term-line mt-3 flex items-center gap-2" id="term-input-line">
-              <span class="text-emerald-400">rashidul@rahul:~<span class="text-yellow-500">$</span></span>
-              <input type="text" id="term-input"
-                     class="flex-1 bg-transparent border-none outline-none text-emerald-300 font-mono text-sm"
-                     placeholder="type a command..."
-                     autocomplete="off" spellcheck="false">
-            </div>
-          </div>
-        </div>
-        <p class="text-xs text-zinc-600 mt-3 text-center font-mono">
-          Commands: <span class="text-emerald-500">about</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">skills</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">experience</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">projects</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">contact</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">social</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">help</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">clear</span> <span class="text-zinc-600">·</span> <span class="text-emerald-500">whoami</span>
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ CONTACT ============ -->
-  <section id="contact" class="relative z-10 py-20 md:py-28 px-6">
-    <div class="max-w-4xl mx-auto text-center">
-      <div class="flex items-center justify-center gap-3 mb-12 reveal">
-        <span class="text-emerald-400 font-mono text-sm">06.</span>
-        <h2 class="text-2xl md:text-3xl font-bold text-white">Get in Touch</h2>
-      </div>
-
-      <div class="reveal max-w-lg mx-auto">
-        <p class="text-zinc-400 mb-8 leading-relaxed">
-          I'm currently open to new opportunities and always happy to connect.
-          Whether you have a project idea, a role in mind, or just want to chat about backend architecture — reach out.
-        </p>
-
-        <div class="flex flex-col items-center gap-3">
-          <a href="mailto:rashidul.rahul@gmail.com" class="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 text-zinc-950 font-semibold rounded-xl hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-500/20 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            rashidul.rahul@gmail.com
-          </a>
-
-          <div class="flex items-center gap-4 mt-4">
-            <a href="https://github.com/rashidul-rahul" target="_blank" class="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-            </a>
-            <a href="https://www.linkedin.com/in/rashshidul-rahul/" target="_blank" class="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            </a>
-            <span class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-zinc-400 font-mono">
-              <span class="text-emerald-400">WhatsApp:</span> +8801623397637
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ FOOTER ============ -->
-  <footer class="relative z-10 border-t border-zinc-800/50 py-8 px-6 text-center">
-    <p class="text-xs text-zinc-600 font-mono">
-      Designed &amp; built by <span class="text-zinc-400">Rashidul Rahul</span> · © 2025–2026
-    </p>
-  </footer>
-
-  <!-- ============ SCRIPTS ============ -->
-  <script>
-    // --- Smooth nav highlight & scroll reveal ---
-    const sections = document.querySelectorAll('section[id]');
-    const revealEls = document.querySelectorAll('.reveal');
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.15 });
-
-    revealEls.forEach(el => observer.observe(el));
-
-    // --- Mini Terminal ---
-    const termOut = document.getElementById('term-output');
-    const termInput = document.getElementById('term-input');
-    const termContainer = document.getElementById('mini-term');
-
-    const termCmds = {
-      help: `Available: about, skills, experience, projects, contact, social, whoami, clear`,
-      about: `Rashidul Islam Rahul — Backend Engineer with 6+ years building scalable distributed systems. AI-assisted engineering, microservices, and system design.`,
-      skills: `Python · Django · FastAPI · PostgreSQL · MongoDB · Redis · Docker · K8s · AWS · GCP · RabbitMQ · Celery · MCP Server Dev · Agentic Coding`,
-      experience: `Software Engineer @ SDS Manager (2025–Present)\nInstructor @ Ostad (2025–Present)\nActing Backend Lead @ Goama (2019–2025)\nBackend Developer @ Sundarbanx (2017–2018)`,
-      projects: `QMS (SDS Manager) — Microservices + RabbitMQ + MCP Server\nAutoring (SDS Manager) — Auth & Wallet DB Architecture\nNurture Game (Goama) — Django/FastAPI microservices\nMonopoly Game (Goama) — Django + MySQL game backend`,
-      contact: `Email: rashidul.rahul@gmail.com\nWhatsApp: +8801623397637`,
-      social: `GitHub: github.com/rashidul-rahul\nLinkedIn: linkedin.com/in/rashshidul-rahul`,
-      whoami: `Rashidul Rahul\nuid=1000(rashidul) groups=backend,microservices,ai-engineering`,
-      banner: `██████╗  █████╗ ███████╗██╗  ██╗██╗██████╗ ██╗   ██╗██╗\n██╔══██╗██╔══██╗██╔════╝██║  ██║██║██╔══██╗██║   ██║██║\n██████╔╝███████║███████╗███████║██║██║  ██║██║   ██║██║\n██╔══██╗██╔══██║╚════██║██╔══██║██║██║  ██║██║   ██║██║\n██║  ██║██║  ██║███████║██║  ██║██║██████╔╝╚██████╔╝███████╗\n╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═════╝  ╚═════╝ ╚══════╝`,
-      clear: null
-    };
-
-    function termPrint(text, cls = 'text-zinc-400') {
-      text.split('\n').forEach(line => {
-        const div = document.createElement('div');
-        div.className = 'term-line ' + cls;
-        div.textContent = line;
-        termOut.appendChild(div);
-      });
-      termContainer.scrollTop = termContainer.scrollHeight;
-    }
-
-    function runTermCmd(cmd) {
-      if (cmd === 'clear') {
-        termOut.innerHTML = '';
-        return;
-      }
-      const result = termCmds[cmd];
-      if (result) {
-        termPrint(result, 'text-emerald-300');
-      } else if (cmd) {
-        termPrint(`command not found: ${cmd}\nType help for available commands.`, 'text-red-400');
-      }
-    }
-
-    termInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const cmd = termInput.value.trim().toLowerCase();
-        termInput.value = '';
-
-        // Echo
-        const echo = document.createElement('div');
-        echo.className = 'term-line text-zinc-500';
-        echo.textContent = `rashidul@rahul:~$ ${cmd}`;
-        termOut.appendChild(echo);
-
-        runTermCmd(cmd);
-        termContainer.scrollTop = termContainer.scrollHeight;
-      }
-    });
-
-    termContainer.addEventListener('click', () => termInput.focus());
-  </script>
+  <!-- JS: terminal engine -->
+  <script src="js/main.js"></script>
 </body>
 </html>

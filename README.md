@@ -1,21 +1,21 @@
 # Portfolio — Rashidul Rahul
 
-Modern, polished developer portfolio built with Tailwind CSS. Dark theme with emerald accents, section-based layout, and an interactive mini terminal easter egg.
+Terminal-inspired interactive developer portfolio. Built with Tailwind CSS + vanilla JS.
 
 ## Structure
 ```
-├── index.html      # Everything — HTML, Tailwind CDN, CSS, JS
+├── index.html      # HTML shell + Tailwind CDN + inline terminal styles
+├── js/
+│   └── main.js     # Terminal engine: commands, history, input handling
 └── README.md
 ```
 
-## Sections
-Hero · About · Skills & Stack · Experience Timeline · Projects · Education · Terminal · Contact
+## Commands
+`about` `skills` `experience` `projects` `education` `contact` `social` `whoami` `help` `clear` `banner`
+Also: `ls` `cv` `exp` `prj` `stack`
 
 ## Deploy
-Single file — copy to any static web server:
 ```bash
 sudo cp index.html /var/www/html/portfolio/
+sudo cp js/main.js /var/www/html/portfolio/js/
 ```
-
-## Tech
-Tailwind CSS (CDN) · Vanilla JS · Inter + JetBrains Mono fonts · Zero build step
